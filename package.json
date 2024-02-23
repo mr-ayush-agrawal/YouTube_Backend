@@ -1,0 +1,15 @@
+{
+  "name": "youtube_backend",
+  "version": "1.0.0",
+  "description": "This is the project which I am making to learn all the concepts of backend Development.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Youtube",
+    "Backend"
+  ],
+  "author": "Ayush",
+  "license": "ISC"
+}
