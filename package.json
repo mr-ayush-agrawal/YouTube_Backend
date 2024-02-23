@@ -3,13 +3,17 @@
   "version": "1.0.0",
   "description": "This is the project which I am making to learn all the concepts of backend Development.",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon src/index.js"
   },
   "keywords": [
     "Youtube",
     "Backend"
   ],
   "author": "Ayush",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
 }
