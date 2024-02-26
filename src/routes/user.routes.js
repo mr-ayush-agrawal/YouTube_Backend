@@ -1,7 +1,16 @@
 import { Router } from "express";
 import { upload } from '../middlewares/multer.middleware.js'
-import { registerUser, loginUser, logoutUser, refreshAcessToken } from "../controllers/user.controller.js";
 import { verifyJWT } from '../middlewares/auth.middleware.js'
+import { 
+    registerUser, 
+    loginUser, 
+    logoutUser, 
+    refreshAcessToken, 
+    changePassword, 
+    getCurrentUser,
+    updateUser,
+    updateUserAvatar } from "../controllers/user.controller.js";
+
 
 const router = Router();
 
@@ -21,6 +30,22 @@ router.route('/login').post(loginUser)
 
 //secured Routes
 router.route('/logout').post(verifyJWT, logoutUser)
-router.route('/refresh-token').get(refreshAcessToken)
+router.route('/refresh-token').post(refreshAcessToken)
+router.route('/change-password').post(verifyJWT,changePassword)
+router.route('/current-user').get(verifyJWT,getCurrentUser)
+router.route('/update-user').patch(verifyJWT,updateUser)
+router.route('/update-user-avatar').patch(
+    verifyJWT,
+    upload.field({
+        name: 'avatat',
+        maxCount : 1
+    }), updateUserAvatar)
+router.route('/update-cover-Image').patch(
+    verifyJWT,
+    upload.field({
+        name: 'coverImage',
+        maxCount : 1
+    }), updateCoverImage)
+
 
 export default router;
