@@ -9,7 +9,8 @@ import {
     changePassword, 
     getCurrentUser,
     updateUser,
-    updateUserAvatar } from "../controllers/user.controller.js";
+    updateUserAvatar,
+    getUserProfile } from "../controllers/user.controller.js";
 
 
 const router = Router();
@@ -27,6 +28,8 @@ router.route('/register').post(
     ]), registerUser)
 
 router.route('/login').post(loginUser)
+router.route('/:username').get(getUserProfile)
+// Can be changed as per the need.
 
 //secured Routes
 router.route('/logout').post(verifyJWT, logoutUser)

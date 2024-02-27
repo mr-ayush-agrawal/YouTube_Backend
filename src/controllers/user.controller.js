@@ -283,19 +283,82 @@ const updateCoverImage = asyncHandler(async (req, res) => {
     const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
-            $set : {
-                coverImage : coverImage.url
+            $set: {
+                coverImage: coverImage.url
             }
         }, {
-            new: true
-        }
+        new: true
+    }
     ).select('-password -refreshToken')
-    
+
     // if(!user)
     return res
         .status(200)
         .json(new ApiResponse(200, user, "Cover Image updated Successfully"))
-        
+
+})
+
+const getUserProfile = asyncHandler(async (req, res) => {
+    const { username } = req.params
+    if (!username)
+        throw new ApiError(400, "Username Missing")
+
+    const channel = await User.aggregate([
+        {
+            $match: {
+                username: username?.toLowerCase()
+            }
+        }, {
+            $lookup: {
+                from: 'subscriptions',
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers"
+            }
+        }, {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "subscribedTo"
+            }
+        }, {
+            $addFields: {
+                SubsctiberCount: {
+                    $size: "$subscribers"
+                },
+                channelsSubscribed: {
+                    $size: "$subscribedTo"
+                },
+                isSubscribed: {
+                    $condition: {
+                        if: { $in: [req.user?._id, "#subscribers.subscriber"] },
+                        then: true,
+                        else: false
+                    }
+                }
+            }
+        }, {
+            $project :{
+                fullname: 1,
+                username: 1,
+                SubsctiberCount: 1,
+                channelsSubscribed: 1,
+                isSubscribed: 1,
+                avatar: 1,
+                coverImage: 1,
+                // email: 1  -> Not passing,
+            }
+        }
+    ])
+
+    console.log(channel)
+    if(!channel)
+        throw new ApiError(404, "Channel Not found")
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, channel[0], "Channel Fetched Successfully"))
 })
 
 
@@ -308,5 +371,6 @@ export {
     changePassword,
     updateUser,
     updateUserAvatar,
-    updateCoverImage
+    updateCoverImage,
+    getUserProfile
 }
