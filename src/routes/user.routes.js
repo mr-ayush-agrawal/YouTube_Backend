@@ -10,7 +10,8 @@ import {
     getCurrentUser,
     updateUser,
     updateUserAvatar,
-    getUserProfile } from "../controllers/user.controller.js";
+    getUserProfile,
+    getWatchHistory } from "../controllers/user.controller.js";
 
 
 const router = Router();
@@ -28,7 +29,6 @@ router.route('/register').post(
     ]), registerUser)
 
 router.route('/login').post(loginUser)
-router.route('/:username').get(getUserProfile)
 // Can be changed as per the need.
 
 //secured Routes
@@ -37,18 +37,15 @@ router.route('/refresh-token').post(refreshAcessToken)
 router.route('/change-password').post(verifyJWT,changePassword)
 router.route('/current-user').get(verifyJWT,getCurrentUser)
 router.route('/update-user').patch(verifyJWT,updateUser)
-router.route('/update-user-avatar').patch(
+router.route('/update-avatar').patch(
     verifyJWT,
-    upload.field({
-        name: 'avatat',
-        maxCount : 1
-    }), updateUserAvatar)
+    upload.single({ name: 'avatat'}), 
+    updateUserAvatar)
 router.route('/update-cover-Image').patch(
-    verifyJWT,
-    upload.field({
-        name: 'coverImage',
-        maxCount : 1
-    }), updateCoverImage)
-
+        verifyJWT,
+        upload.single({name: 'coverImage',}), 
+        updateCoverImage)
+router.route('.channel/:username').get(verifyJWT, getUserProfile)
+router.route('/watch-history').get(verifyJWT, getWatchHistory)
 
 export default router;
