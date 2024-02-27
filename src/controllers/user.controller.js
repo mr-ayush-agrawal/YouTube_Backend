@@ -4,6 +4,7 @@ import { User } from '../models/users.models.js'
 import { uploadOnCloudinary } from '../utils/cloudinary.js'
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { jwt } from "jsonwebtoken"
+import mongoose from "mongoose"
 
 const generateAccessAndRefreshTokens = async (userId) => {
     try {
@@ -271,7 +272,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
 })
 
 const updateCoverImage = asyncHandler(async (req, res) => {
-    const coverImageLocalPath = req.feild?.path
+    const coverImageLocalPfath = req.feild?.path
     if (!coverImageLocalPath)
         throw new ApiError(400, "Please upload the cover Image")
 
@@ -339,7 +340,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
                 }
             }
         }, {
-            $project :{
+            $project: {
                 fullname: 1,
                 username: 1,
                 SubsctiberCount: 1,
@@ -353,7 +354,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
     ])
 
     console.log(channel)
-    if(!channel)
+    if (!channel)
         throw new ApiError(404, "Channel Not found")
 
     return res
@@ -361,6 +362,54 @@ const getUserProfile = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, channel[0], "Channel Fetched Successfully"))
 })
 
+const getWatchHistory = asyncHandler(async (req, res) => {
+    const user = await User.aggregate([
+        {
+            $match: {
+                _id: mongoose.Types.ObjectId(req.user._id)
+            }
+        }, {
+            $lookup: {
+                from: "videos",
+                localField: "watchHistory",
+                foreignField: "_id",
+                as: "watchHistory",
+                // getting the owner of each video of the WatchHistory
+                pipeline: [
+                    {
+                        $lookup: {
+                            from: "users",
+                            localField: "owner",
+                            foreignField: "_id",
+                            as: "owner",
+                            // Info available to the viewer
+                            pipeline: [
+                                {
+                                    $project : {
+                                        fullname: 1,
+                                        username: 1,
+                                        avatar: 1
+                                    }
+                                }
+                            ]
+                        }
+                    }, {
+                        // Over writing the owner feild with only 1 feild
+                        $addFields: {
+                            owner: {
+                                $first : "$owner"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ])
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, user[0].watchHistory, "Watch History fetch successfully" ))
+})
 
 export {
     registerUser,
@@ -372,5 +421,6 @@ export {
     updateUser,
     updateUserAvatar,
     updateCoverImage,
-    getUserProfile
+    getUserProfile,
+    getWatchHistory
 }
